@@ -6,118 +6,138 @@
 /*   By: fjalowie <fjalowie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/08 15:34:09 by fjalowie          #+#    #+#             */
-/*   Updated: 2024/05/18 14:32:41 by fjalowie         ###   ########.fr       */
+/*   Updated: 2024/05/25 10:16:17 by fjalowie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/wait.h>
-#include <sys/types.h>
-#include "libft/libft.h"
+#include "pipex.h"
 
-#define BUFFER_SIZE 4096
-
-int main (int argc, char * argv[])
+void	msg_error_and_exit(char *error)
 {
-	char buffer[BUFFER_SIZE];
-	char buffer2[BUFFER_SIZE];
-	char * filename_src = argv[1];
-	char * filename_dest = argv[4];
+	perror(error);
+	exit(EXIT_FAILURE);
+}
+
+void free_ft_split(char **split)
+{
+	char	**orig_split = split;
+
+	while(*split != NULL)
+	{
+		free(*split);
+		split++;
+	}
+	free(orig_split);
+}
+
+char	*find_path(char **envp, char *cmd)
+{
+	char	**envp_paths;
+	char	*temp_envp_paths;
+	char	*envp_path_part;
+	char	*final_path;
+	int		i;
+
+	if (!envp || !cmd)
+		msg_error_and_exit(ERR_NOARG);
+	final_path = NULL;
+	envp_path_part = ft_strjoin("/", cmd);
+	while (ft_strncmp(*envp, "PATH", 4) != 0)
+		envp++;
+	envp_paths = ft_split(*envp+5, ':');
+	i = 0;
+	while(envp_paths[i] != NULL)
+	{
+		temp_envp_paths = ft_strjoin(envp_paths[i], envp_path_part);
+		free(envp_paths[i]);
+		envp_paths[i] = temp_envp_paths;
+		if (access(envp_paths[i], F_OK) == 0)
+		{
+			final_path = strdup(envp_paths[i]);
+			break;
+		}
+		i++;
+	}
+	free_ft_split(envp_paths);
+	free(envp_path_part);
+	return (final_path);
+}
+
+int	child_process(int *fd_pipe, int fd_src, char **args_cmd1, char **envp)
+{
+	char	*origin_args_cmd1;
+	
+	if (access(args_cmd1[0], F_OK) != 0)
+	{
+		origin_args_cmd1 = args_cmd1[0];
+		args_cmd1[0] =  find_path(envp, args_cmd1[0]);
+		free(origin_args_cmd1);
+	}
+	close(fd_pipe[0]);
+	dup2(fd_src, STDIN_FILENO);
+	dup2(fd_pipe[1], STDOUT_FILENO);
+	if (args_cmd1[0] != NULL)
+		execve(args_cmd1[0], args_cmd1, envp);
+	return (-1);
+}
+
+int parent_process(int *fd_pipe, int fd_dest, char **args_cmd2, char **envp)
+{
+	char	*origin_args_cmd2;
+
+	if (access(args_cmd2[0], F_OK) != 0)
+	{
+		origin_args_cmd2 = args_cmd2[0];
+		args_cmd2[0] =  find_path(envp, args_cmd2[0]);
+		free(origin_args_cmd2);
+	}
+	close(fd_pipe[1]);
+	wait(NULL);
+	dup2(fd_pipe[0], STDIN_FILENO);
+	dup2(fd_dest, STDOUT_FILENO);
+	if (args_cmd2[0] != NULL)
+		execve(args_cmd2[0], args_cmd2, envp);
+	return (-1);
+}
+
+int	main(int argc, char *argv[], char *envp[])
+{
 	int fd_src;
 	int fd_dest;
-	
-	pid_t p;
-	pid_t p2;
-	int fd_pipe1[2];
-	int fd_pipe2[2];
+	pid_t pid;
+	int fd_pipe[2];
+	char **args_cmd1;
+	char **args_cmd2;
 
-	char **args_cmd1 = ft_split(argv[2], ' ');
-	args_cmd1[0] =  ft_strjoin("/usr/bin/", args_cmd1[0]);
-	char **args_cmd2 = ft_split(argv[3], ' ');
-	args_cmd2[0] =  ft_strjoin("/usr/bin/", args_cmd2[0]);
-	printf("str: %s", args_cmd2[2]);
-	// char *args_cmd1[] = { "/usr/bin/grep", "a1", NULL };
-	// char *args_cmd2[] = { "/usr/bin/wc", "-w", NULL };
-
-    char *env[] = { NULL };
-	// if (argc != 3)
-	// {
-	// 	write(2, "error: arguments lacking", 25);
-	// 	exit(EXIT_FAILURE);
-	// }
-	
-	fd_src = open (filename_src, O_RDONLY);
+	if (argc != 5)
+		msg_error_and_exit(ERR_TOOFEWARG);
+	fd_src = open(argv[1], O_RDONLY);
 	if (fd_src <= -1)
-	{
-		perror("fd_src");
-		exit(EXIT_FAILURE);
-	}
-
-	fd_dest = open(argv[4], O_RDWR | O_CREAT, 0644);
+		msg_error_and_exit(ERR_FDOPEN);
+	fd_dest = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0664);
 	if (fd_dest <= -1)
+		msg_error_and_exit(ERR_FDOPEN); //maybe lacking close(fd_src);
+	if (pipe(fd_pipe) <= -1)
+		msg_error_and_exit(ERR_CRTPIPE); 
+	args_cmd1 = ft_split(argv[2], ' ');
+	args_cmd2 = ft_split(argv[3], ' ');
+	pid = fork();
+	if (pid == 0)
 	{
-		perror("fd_dest");
-		close(fd_src);
-		exit(EXIT_FAILURE);
-	}
-
-	if (pipe(fd_pipe1) < 0)
-	{
-		perror("fd_pipe1");
-		exit(EXIT_FAILURE);
-	}
-
-	if (pipe(fd_pipe2) < 0)
-	{
-		perror("fd_pipe2");
-		exit(EXIT_FAILURE);
-	}
-
-	p = fork();
-
-	if (p > 0)
-	{
-		close(fd_pipe2[0]);
-		close(fd_pipe2[1]);
-
-		close(fd_pipe1[1]);
-		wait(NULL);
-		read(fd_pipe1[0], buffer2, BUFFER_SIZE);
-		close(fd_pipe1[0]);
-		write(fd_dest, buffer2, strlen(buffer2));
-	}
-	else if (p == 0)
-	{
-		p2 = fork();
-		if (p2 == 0)
+		if (child_process(fd_pipe, fd_src, args_cmd1, envp) == -1)
 		{
-			close(fd_pipe2[0]);
-
-			close(fd_pipe1[0]);
-			close(fd_pipe1[1]);
-			dup2(fd_src, STDIN_FILENO);
-			dup2(fd_pipe2[1], STDOUT_FILENO);
-			execve(args_cmd1[0], args_cmd1, env);
-			perror("execve");
-			exit(EXIT_FAILURE);
+			free_ft_split(args_cmd1);
+			msg_error_and_exit(ERR_NOCMD);
 		}
-		else if (p2 > 0)
+	}
+	else if (pid > 0)
+	{
+		if (parent_process(fd_pipe, fd_dest, args_cmd2, envp) == -1)
 		{
-			close(fd_pipe1[0]);
-			close(fd_pipe2[1]);
-			wait(NULL);
-			dup2(fd_pipe2[0], STDIN_FILENO);
-			dup2(fd_pipe1[1], STDOUT_FILENO);
-			close(fd_pipe2[0]);
-			close(fd_pipe1[1]);
-			execve(args_cmd2[0], args_cmd2, env);
-			perror("execve");
-			exit(EXIT_FAILURE);
+			free_ft_split(args_cmd1);
+			free_ft_split(args_cmd2);
+			msg_error_and_exit(ERR_NOCMD);
 		}
+
 	}
 }
