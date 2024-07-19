@@ -6,13 +6,14 @@
 #    By: fjalowie <fjalowie@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/13 14:20:27 by fjalowie          #+#    #+#              #
-#    Updated: 2024/05/23 13:51:59 by fjalowie         ###   ########.fr        #
+#    Updated: 2024/07/19 10:00:46 by fjalowie         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME	= pipex
 
-SRCS	= pipex.c
+SRCS	= pipex.c \
+			utils.c
 
 OBJS	= ${SRCS:.c=.o}
 
