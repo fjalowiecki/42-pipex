@@ -6,12 +6,19 @@
 /*   By: fjalowie <fjalowie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/08 15:34:09 by fjalowie          #+#    #+#             */
-/*   Updated: 2024/07/29 10:41:12 by fjalowie         ###   ########.fr       */
+/*   Updated: 2024/07/30 12:01:24 by fjalowie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
+/**
+ * @brief Executes the first child process in the pipeline.
+ * 
+ * @param data Pointer to the data structure containing command and file 
+ * descriptors.
+ * @param envp Array of environment variables.
+ */
 void	child_process_1(t_data *data, char **envp)
 {
 	char	*origin_args_cmd1;
@@ -23,15 +30,23 @@ void	child_process_1(t_data *data, char **envp)
 		free(origin_args_cmd1);
 	}
 	if (dup2(data->fd_src, STDIN_FILENO) < 0)
-		msg_error_and_exit(ERR_DUP2);
+		msg_error_and_exit(data, ERR_DUP2);
 	if (dup2(data->fd_pipe[1], STDOUT_FILENO) < 0)
-		msg_error_and_exit(ERR_DUP2);
+		msg_error_and_exit(data, ERR_DUP2);
 	close(data->fd_pipe[0]);
+	data->fd_pipe[0] = -1;
 	if (data->args_cmd1[0] != NULL)
 		execve(data->args_cmd1[0], data->args_cmd1, envp);
-	msg_error_and_exit(ERR_NOCMD);
+	msg_error_and_exit(data, ERR_NOCMD);
 }
 
+/**
+ * @brief Executes the second child process in the pipeline.
+ * 
+ * @param data Pointer to the data structure containing command and file 
+ * descriptors.
+ * @param envp Array of environment variables.
+ */
 void	child_process_2(t_data *data, char **envp)
 {
 	char	*origin_args_cmd2;
@@ -42,46 +57,60 @@ void	child_process_2(t_data *data, char **envp)
 		data->args_cmd2[0] = find_path(envp, data->args_cmd2[0]);
 		free(origin_args_cmd2);
 	}
-	printf("data->args_cmd2[0]: %s\n", data->args_cmd2[0]);
 	if (dup2(data->fd_pipe[0], STDIN_FILENO) < 0)
-		msg_error_and_exit(ERR_DUP2);
+		msg_error_and_exit(data, ERR_DUP2);
 	close(data->fd_pipe[1]);
+	data->fd_pipe[1] = -1;
 	if (dup2(data->fd_dest, STDOUT_FILENO) < 0)
-		msg_error_and_exit(ERR_DUP2);
+		msg_error_and_exit(data, ERR_DUP2);
 	if (data->args_cmd2[0] != NULL)
 		execve(data->args_cmd2[0], data->args_cmd2, envp);
-	msg_error_and_exit(ERR_NOCMD);
+	msg_error_and_exit(data, ERR_NOCMD);
 }
 
-void	open_files(t_data *data, char **argv)
+/**
+ * @brief Initializes the data structure with default values.
+ * 
+ * @param data Pointer to the data structure to initialize.
+ */
+void	initialize_data(t_data *data)
 {
-	data->fd_src = open(argv[1], O_RDONLY);
-	if (data->fd_src <= -1)
-		msg_error_and_exit(ERR_FDOPEN);
-	data->fd_dest = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0664);
-	if (data->fd_dest <= -1)
-		msg_error_and_exit(ERR_FDOPEN);
+	data->args_cmd1 = NULL;
+	data->args_cmd2 = NULL;
+	data->fd_src = -1;
+	data->fd_dest = -1;
+	data->fd_pipe[0] = -1;
+	data->fd_pipe[1] = -1;
 }
 
+/**
+ * @brief Main function to execute the pipex program.
+ * 
+ * @param argc Argument count.
+ * @param argv Argument vector.
+ * @param envp Array of environment variables.
+ * @return int Exit status of the program.
+ */
 int	main(int argc, char *argv[], char *envp[])
 {
 	t_data	data;
 
+	initialize_data (&data);
 	if (argc != 5)
-		msg_error_and_exit(ERR_TOOFEWARG);
+		msg_error_and_exit(&data, ERR_TOOFEWARG);
 	open_files (&data, argv);
-	if (pipe(data.fd_pipe) <= -1)
-		msg_error_and_exit(ERR_CRTPIPE);
 	data.args_cmd1 = ft_split(argv[2], ' ');
 	data.args_cmd2 = ft_split(argv[3], ' ');
+	if (pipe(data.fd_pipe) <= -1)
+		msg_error_and_exit(&data, ERR_CRTPIPE);
 	data.pid1 = fork();
 	if (data.pid1 < 0)
-		msg_error_and_exit(ERR_FORK);
+		msg_error_and_exit(&data, ERR_FORK);
 	else if (data.pid1 == 0)
 		child_process_1(&data, envp);
 	data.pid2 = fork();
 	if (data.pid2 < 0)
-		msg_error_and_exit(ERR_FORK);
+		msg_error_and_exit(&data, ERR_FORK);
 	else if (data.pid2 == 0)
 		child_process_2(&data, envp);
 	close_pipes(&data);

@@ -6,22 +6,18 @@
 /*   By: fjalowie <fjalowie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 19:25:31 by fjalowie          #+#    #+#             */
-/*   Updated: 2024/07/29 10:41:57 by fjalowie         ###   ########.fr       */
+/*   Updated: 2024/07/30 13:04:02 by fjalowie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// #include <fcntl.h>
-// #include <stdio.h>
-// # include <stdlib.h>
-// # include <unistd.h>
-// #include "libft/libft.h"
-
-// # ifndef BUFFER_SIZE
-// #  define BUFFER_SIZE 20
-// # endif
-
 #include "pipex_bonus.h"
 
+/**
+ * @brief Process buffer containing end-of-line character.
+ * @param buffer Buffer to process.
+ * @param line Current line being constructed.
+ * @return char* Updated line with buffer content.
+ */
 static char	*process_buffer_with_eol(char *buffer, char *line)
 {
 	int		eol_length;
@@ -44,6 +40,12 @@ static char	*process_buffer_with_eol(char *buffer, char *line)
 	return (line);
 }
 
+/**
+ * @brief Process buffer without end-of-line character.
+ * @param buffer Buffer to process.
+ * @param line Current line being constructed.
+ * @return char* Updated line with buffer content.
+ */
 static char	*process_buffer_without_eol(char *buffer, char *line)
 {
 	char	*tmp_line;
@@ -65,6 +67,13 @@ static char	*process_buffer_without_eol(char *buffer, char *line)
 	return (line);
 }
 
+/**
+ * @brief Process number of bytes read from file descriptor.
+ * @param fd File descriptor to read from.
+ * @param buffer Buffer to store read data.
+ * @param line Current line being constructed.
+ * @return int Number of bytes read or -1 on error.
+ */
 static int	process_nb_read(int fd, char *buffer, char *line)
 {
 	int	nb_read;
@@ -79,6 +88,11 @@ static int	process_nb_read(int fd, char *buffer, char *line)
 	return (nb_read);
 }
 
+/**
+ * @brief Get the next line from a file descriptor.
+ * @param fd File descriptor to read from.
+ * @return char* Line read from the file descriptor.
+ */
 char	*get_next_line(int fd)
 {
 	static char	buffer[BUFFER_SIZE + 1];
@@ -107,34 +121,3 @@ char	*get_next_line(int fd)
 	}
 	return (line);
 }
-
-//  int main()
-// {
-// 	int		i;
-// 	int		fd;
-
-// 	// // open a file
-// 	// i = 0;
-// 	fd = open("test.txt", O_WRONLY | O_CREAT | O_TRUNC, 0664);
-// 	// while (i < 6)
-// 	// {
-// 	// 	line = get_next_line(fd);
-// 	// 	printf("linia: %s\n", line);
-// 	// 	free(line);
-// 	// 	i++;
-// 	// }
-// 	// close (fd);
-
-// 	// standard input
-// 	char *line;
-// 	char *limiter = "stop\n";
-
-// 	while (1)
-// 	{
-// 		line = get_next_line(0);
-// 		if (ft_strncmp(line, limiter, ft_strlen(limiter)) == 0)
-// 			break;
-// 		write(fd, line, ft_strlen(line));
-// 	}
-// 	return (0);
-// }

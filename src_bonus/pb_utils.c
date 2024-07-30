@@ -1,17 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils_bonus.c                                      :+:      :+:    :+:   */
+/*   pb_utils.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fjalowie <fjalowie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/25 16:50:15 by fjalowie          #+#    #+#             */
-/*   Updated: 2024/07/29 12:41:56 by fjalowie         ###   ########.fr       */
+/*   Updated: 2024/07/30 14:52:21 by fjalowie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex_bonus.h"
 
+/**
+ * @brief Find the path of a command.
+ * @param envp Environment variables.
+ * @param cmd Command to find.
+ * @return char* Path of the command.
+ */
 char	*find_path(char **envp, char *cmd)
 {
 	char	**envp_paths;
@@ -31,6 +37,7 @@ char	*find_path(char **envp, char *cmd)
 		if (access(final_envp_path, F_OK) == 0)
 			break ;
 		free(final_envp_path);
+		final_envp_path = NULL;
 		i++;
 	}
 	free_ft_split(envp_paths);
@@ -38,6 +45,11 @@ char	*find_path(char **envp, char *cmd)
 	return (final_envp_path);
 }
 
+/**
+ * @brief Display an error message, free memory and exit.
+ * @param data Pointer to t_data structure.
+ * @param error Error message to display.
+ */
 void	msg_error_and_exit(t_data *data, char *error)
 {
 	if (data->fd_src != -1)
@@ -50,6 +62,10 @@ void	msg_error_and_exit(t_data *data, char *error)
 	exit(EXIT_FAILURE);
 }
 
+/**
+ * @brief Free the command array.
+ * @param data Pointer to t_data structure.
+ */
 void	free_cmd(t_data *data)
 {
 	char	**cmd_ptr;
@@ -64,6 +80,10 @@ void	free_cmd(t_data *data)
 	data->cmd = NULL;
 }
 
+/**
+ * @brief Free a split string array.
+ * @param split Split string array to free.
+ */
 void	free_ft_split(char **split)
 {
 	char	**orig_split;
@@ -75,22 +95,4 @@ void	free_ft_split(char **split)
 		split++;
 	}
 	free(orig_split);
-}
-void open_dest_file(t_data *data)
-{
-	data->fd_dest = open(data->argv[data->argc - 1],
-			O_WRONLY | O_CREAT | O_APPEND, 0664);
-	if (data->fd_dest <= -1)
-		msg_error_and_exit(data, ERR_FDOPEN);
-}
-
-void	open_src_and_dest_files(t_data *data)
-{
-	data->fd_src = open(data->argv[1], O_RDONLY);
-	if (data->fd_src <= -1)
-		msg_error_and_exit(data, ERR_FDOPEN);
-	data->fd_dest = open(data->argv[data->argc - 1],
-		O_WRONLY | O_CREAT | O_TRUNC, 0664);
-	if (data->fd_dest <= -1)
-		msg_error_and_exit(data, ERR_FDOPEN);
 }
