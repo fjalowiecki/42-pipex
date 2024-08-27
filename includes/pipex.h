@@ -6,7 +6,7 @@
 /*   By: fjalowie <fjalowie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/23 13:55:01 by fjalowie          #+#    #+#             */
-/*   Updated: 2024/07/30 11:59:00 by fjalowie         ###   ########.fr       */
+/*   Updated: 2024/08/27 10:56:27 by fjalowie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 # include "../libft/libft.h"
 
 # define ERR_NOCMD "Error: command not found"
-# define ERR_TOOFEWARG "Error: Not enough arguments provided by user"
+# define ERR_TOOFEWARG "Error: wrong number of arguments provided"
 # define ERR_FDOPEN "Error: creation of file descriptor failed"
 # define ERR_CRTPIPE "Error: pipe creation failed"
 # define ERR_DUP2 "Error: file descriptor duplication (dup2) failed"

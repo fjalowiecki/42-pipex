@@ -6,7 +6,7 @@
 /*   By: fjalowie <fjalowie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/08 15:34:09 by fjalowie          #+#    #+#             */
-/*   Updated: 2024/07/30 14:50:56 by fjalowie         ###   ########.fr       */
+/*   Updated: 2024/08/27 11:22:08 by fjalowie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,18 +63,17 @@ int	main(int argc, char *argv[], char *envp[])
 	data.cmd = NULL;
 	data.fd_dest = -1;
 	data.fd_src = -1;
-	if (argc < 4)
-	{
-		perror(ERR_TOOFEWARG);
-		exit(EXIT_FAILURE);
-	}
 	if (ft_strncmp(data.argv[1], "here_doc", 9) == 0)
 	{
+		if (argc < 5)
+			msg_error_and_exit(&data, ERR_TOOFEWARG);
 		open_dest_file(&data);
 		recursive_pipeline(get_shell_input(&data), &data, 4);
 	}
 	else
 	{
+		if (argc < 4)
+			msg_error_and_exit(&data, ERR_TOOFEWARG);
 		open_src_and_dest_files(&data);
 		recursive_pipeline(data.fd_src, &data, 3);
 	}

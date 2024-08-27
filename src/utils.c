@@ -6,7 +6,7 @@
 /*   By: fjalowie <fjalowie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/25 16:50:15 by fjalowie          #+#    #+#             */
-/*   Updated: 2024/07/30 12:03:03 by fjalowie         ###   ########.fr       */
+/*   Updated: 2024/08/27 10:14:20 by fjalowie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,8 @@ void	msg_error_and_exit(t_data *data, char *msg)
 		close(data->fd_pipe[0]);
 	if (data->fd_pipe[1] != -1)
 		close(data->fd_pipe[1]);
-	perror(msg);
+	write(2, msg, ft_strlen(msg));
+	write(2, "\n", 1);
 	exit(EXIT_FAILURE);
 }
 

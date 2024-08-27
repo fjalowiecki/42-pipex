@@ -6,7 +6,7 @@
 /*   By: fjalowie <fjalowie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/23 13:55:01 by fjalowie          #+#    #+#             */
-/*   Updated: 2024/07/30 14:55:38 by fjalowie         ###   ########.fr       */
+/*   Updated: 2024/08/27 11:16:12 by fjalowie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,8 @@
 #  define BUFFER_SIZE 100
 # endif
 
-# define ERR_EXECVE "Error: execve failed"
-# define ERR_TOOFEWARG "Error: Not enough arguments provided by user"
+# define ERR_EXECVE "Error: invalid command"
+# define ERR_TOOFEWARG "Error: wrong number of arguments provided"
 # define ERR_FDOPEN "Error: creating file descriptor failed"
 # define ERR_CRTPIPE "Error: pipe creation failed"
 # define ERR_DUP2 "Error: file descriptor duplication (dup2) failed"
@@ -43,7 +43,6 @@ typedef struct s_data
 	int		fd_src;
 	int		fd_dest;
 	char	**cmd;
-	bool	here_doc;
 }	t_data;
 
 /** pipex_bonus.c **/
