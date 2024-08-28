@@ -6,7 +6,7 @@
 /*   By: fjalowie <fjalowie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/08 15:34:09 by fjalowie          #+#    #+#             */
-/*   Updated: 2024/08/27 11:22:08 by fjalowie         ###   ########.fr       */
+/*   Updated: 2024/08/28 19:21:07 by fjalowie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,47 +34,107 @@ int	get_shell_input(t_data *data)
 	return (fd_pipe[0]);
 }
 
-static void	open_dest_file(t_data *data)
+static void	open_dest_file(t_data *data, int append_param)
 {
-	data->fd_dest = open(data->argv[data->argc - 1],
-			O_WRONLY | O_CREAT | O_APPEND, 0664);
+	if (append_param == 0)
+		data->fd_dest = open(data->argv[data->argc - 1],
+				O_WRONLY | O_CREAT | O_TRUNC, 0664);
+	else if (append_param == 1)
+		data->fd_dest = open(data->argv[data->argc - 1],
+				O_WRONLY | O_CREAT | O_APPEND, 0664);
+	else
+		msg_error_and_exit(data, ERR_WRONG_PARAM);
 	if (data->fd_dest <= -1)
 		msg_error_and_exit(data, ERR_FDOPEN);
 }
 
-static void	open_src_and_dest_files(t_data *data)
+static void	open_src_file(t_data *data)
 {
 	data->fd_src = open(data->argv[1], O_RDONLY);
 	if (data->fd_src <= -1)
 		msg_error_and_exit(data, ERR_FDOPEN);
-	data->fd_dest = open(data->argv[data->argc - 1],
-			O_WRONLY | O_CREAT | O_TRUNC, 0664);
-	if (data->fd_dest <= -1)
-		msg_error_and_exit(data, ERR_FDOPEN);
+}
+
+static void	check_if_output_is_defined(t_data *data)
+{
+	char	*cmd_path;
+
+	cmd_path = find_path(data->envp, data->argv[data->argc - 1]);
+	if (cmd_path != NULL)
+	{
+		data->no_output_file = true;
+		free(cmd_path);
+	}
+	else
+		data->no_output_file = false;
+}
+
+static void	validate_commands(t_data *data)
+{
+	char *cmd_path;
+	int	i;
+	int j;
+
+	if (ft_strncmp(data->argv[1], "here_doc", 9) == 0)
+		i = 3;
+	else
+		i = 2;
+	while (data->argv[i] != NULL
+		&& (data->no_output_file == false && i < data->argc - 1))
+	{
+		if (data->argv[i][0] == '\0')
+			msg_error_and_exit(data, ERR_INV_CMD);
+		j = 0;
+		while (data->argv[i][j] != '\0')
+		{
+			if (ft_isprint(data->argv[i][j]) == 0)
+				printf("isprint %c\n", data->argv[i][j]);
+			j++;
+		}
+		cmd_path = find_path(data->envp, data->argv[i]);
+		if (access(cmd_path, X_OK != 0))
+		{
+			free(cmd_path);
+			msg_error_and_exit(data, ERR_INV_CMD);
+		}
+		free(cmd_path);
+		i++;
+	}
+} 
+
+void static	initialize_data(t_data *data, int argc, char *argv[], char *envp[])
+{
+	data->argc = argc;
+	data->argv = argv;
+	data->envp = envp;
+	data->cmd = NULL;
+	data->fd_dest = -1;
+	data->fd_src = -1;
+	data->no_output_file = false;
 }
 
 int	main(int argc, char *argv[], char *envp[])
 {
 	t_data	data;
 
-	data.argc = argc;
-	data.argv = argv;
-	data.envp = envp;
-	data.cmd = NULL;
-	data.fd_dest = -1;
-	data.fd_src = -1;
+	initialize_data(&data, argc, argv, envp);
+	check_if_output_is_defined(&data);
+	validate_commands(&data);
 	if (ft_strncmp(data.argv[1], "here_doc", 9) == 0)
 	{
-		if (argc < 5)
+		if (argc < 4)
 			msg_error_and_exit(&data, ERR_TOOFEWARG);
-		open_dest_file(&data);
+		if (data.no_output_file == false)
+			open_dest_file(&data, 1);
 		recursive_pipeline(get_shell_input(&data), &data, 4);
 	}
 	else
 	{
-		if (argc < 4)
+		if (argc < 3)
 			msg_error_and_exit(&data, ERR_TOOFEWARG);
-		open_src_and_dest_files(&data);
+		open_src_file(&data);
+		if (data.no_output_file == false)
+			open_dest_file(&data, 0);
 		recursive_pipeline(data.fd_src, &data, 3);
 	}
 }

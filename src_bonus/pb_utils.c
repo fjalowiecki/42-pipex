@@ -6,11 +6,22 @@
 /*   By: fjalowie <fjalowie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/25 16:50:15 by fjalowie          #+#    #+#             */
-/*   Updated: 2024/08/27 10:15:08 by fjalowie         ###   ########.fr       */
+/*   Updated: 2024/08/28 18:44:08 by fjalowie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex_bonus.h"
+
+static char	*parse_cmd(char *cmd)
+{
+	char *parsed_cmd;
+	size_t	parsed_cmd_len;
+
+	parsed_cmd_len = ft_strlen(cmd) - ft_strlen(ft_strchr(cmd, ' ') + 1);
+	parsed_cmd = malloc(sizeof(char) * parsed_cmd_len);
+	ft_strlcpy(parsed_cmd, cmd, parsed_cmd_len);
+	return (parsed_cmd);
+}
 
 /**
  * @brief Find the path of a command.
@@ -23,10 +34,15 @@ char	*find_path(char **envp, char *cmd)
 	char	**envp_paths;
 	char	*final_envp_path;
 	char	*envp_path_part;
+	char	*parsed_cmd = NULL;
 	int		i;
 
+	if (ft_strchr(cmd, ' ') != NULL)
+		parsed_cmd = parse_cmd(cmd);
+	else
+		parsed_cmd = cmd;
 	final_envp_path = NULL;
-	envp_path_part = ft_strjoin("/", cmd);
+	envp_path_part = ft_strjoin("/", parsed_cmd);
 	while (ft_strncmp(*envp, "PATH", 4) != 0)
 		envp++;
 	envp_paths = ft_split(*envp + 5, ':');
@@ -34,7 +50,7 @@ char	*find_path(char **envp, char *cmd)
 	while (envp_paths[i] != NULL)
 	{
 		final_envp_path = ft_strjoin(envp_paths[i], envp_path_part);
-		if (access(final_envp_path, F_OK) == 0)
+		if (access(final_envp_path, X_OK) == 0)
 			break ;
 		free(final_envp_path);
 		final_envp_path = NULL;
@@ -42,6 +58,8 @@ char	*find_path(char **envp, char *cmd)
 	}
 	free_ft_split(envp_paths);
 	free(envp_path_part);
+	if (parsed_cmd != cmd)
+		free(parsed_cmd);
 	return (final_envp_path);
 }
 

@@ -6,7 +6,7 @@
 /*   By: fjalowie <fjalowie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/23 13:55:01 by fjalowie          #+#    #+#             */
-/*   Updated: 2024/08/27 11:16:12 by fjalowie         ###   ########.fr       */
+/*   Updated: 2024/08/28 18:43:35 by fjalowie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,11 +29,13 @@
 # endif
 
 # define ERR_EXECVE "Error: invalid command"
+# define ERR_INV_CMD "Error: invalid command"
 # define ERR_TOOFEWARG "Error: wrong number of arguments provided"
 # define ERR_FDOPEN "Error: creating file descriptor failed"
-# define ERR_CRTPIPE "Error: pipe creation failed"
-# define ERR_DUP2 "Error: file descriptor duplication (dup2) failed"
-# define ERR_FORK "Error: fork creation failed"
+# define ERR_CRTPIPE "Internal error: pipe creation failed"
+# define ERR_DUP2 "Internal error: file descriptor duplication (dup2) failed"
+# define ERR_FORK "Internal error: fork creation failed"
+# define ERR_WRONG_PARAM "Internal error: wrong parameter"
 
 typedef struct s_data
 {
@@ -43,6 +45,7 @@ typedef struct s_data
 	int		fd_src;
 	int		fd_dest;
 	char	**cmd;
+	bool	no_output_file;
 }	t_data;
 
 /** pipex_bonus.c **/

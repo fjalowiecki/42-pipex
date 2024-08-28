@@ -6,7 +6,7 @@
 /*   By: fjalowie <fjalowie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/30 14:51:11 by fjalowie          #+#    #+#             */
-/*   Updated: 2024/07/30 14:52:15 by fjalowie         ###   ########.fr       */
+/*   Updated: 2024/08/28 18:50:27 by fjalowie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,11 +51,13 @@ static void	get_cmd(t_data *data, int argc_cnt)
  */
 static void	process_last_cmd(t_data *data, int input_fd)
 {
-	if (data->fd_dest <= -1)
-		msg_error_and_exit(data, ERR_FDOPEN);
-	duplicate_fds(data, input_fd, data->fd_dest);
+	if (data->no_output_file)
+		duplicate_fds(data, input_fd, STDOUT_FILENO);
+	else
+		duplicate_fds(data, input_fd, data->fd_dest);
 	close(input_fd);
-	close(data->fd_dest);
+	if (data->fd_dest != -1)
+		close(data->fd_dest);
 	data->fd_dest = -1;
 	if (data->cmd[0] != NULL)
 	{
