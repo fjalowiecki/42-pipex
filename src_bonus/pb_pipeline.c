@@ -6,7 +6,7 @@
 /*   By: fjalowie <fjalowie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/30 14:51:11 by fjalowie          #+#    #+#             */
-/*   Updated: 2024/08/28 18:50:27 by fjalowie         ###   ########.fr       */
+/*   Updated: 2024/08/28 19:59:54 by fjalowie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,8 @@ void	recursive_pipeline(int input_fd, t_data *data, int argc_cnt)
 	pid_t	pid;
 
 	get_cmd(data, argc_cnt);
-	if (argc_cnt == data->argc - 1)
+	if ((data->no_output_file == false && argc_cnt == data->argc - 1)
+		|| (data->no_output_file == true && argc_cnt == data->argc))
 		process_last_cmd(data, input_fd);
 	else
 	{
