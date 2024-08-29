@@ -6,18 +6,12 @@
 /*   By: fjalowie <fjalowie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 19:25:31 by fjalowie          #+#    #+#             */
-/*   Updated: 2024/07/30 13:04:02 by fjalowie         ###   ########.fr       */
+/*   Updated: 2024/08/29 10:54:33 by fjalowie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex_bonus.h"
 
-/**
- * @brief Process buffer containing end-of-line character.
- * @param buffer Buffer to process.
- * @param line Current line being constructed.
- * @return char* Updated line with buffer content.
- */
 static char	*process_buffer_with_eol(char *buffer, char *line)
 {
 	int		eol_length;
@@ -40,12 +34,6 @@ static char	*process_buffer_with_eol(char *buffer, char *line)
 	return (line);
 }
 
-/**
- * @brief Process buffer without end-of-line character.
- * @param buffer Buffer to process.
- * @param line Current line being constructed.
- * @return char* Updated line with buffer content.
- */
 static char	*process_buffer_without_eol(char *buffer, char *line)
 {
 	char	*tmp_line;
@@ -67,13 +55,6 @@ static char	*process_buffer_without_eol(char *buffer, char *line)
 	return (line);
 }
 
-/**
- * @brief Process number of bytes read from file descriptor.
- * @param fd File descriptor to read from.
- * @param buffer Buffer to store read data.
- * @param line Current line being constructed.
- * @return int Number of bytes read or -1 on error.
- */
 static int	process_nb_read(int fd, char *buffer, char *line)
 {
 	int	nb_read;
@@ -88,11 +69,6 @@ static int	process_nb_read(int fd, char *buffer, char *line)
 	return (nb_read);
 }
 
-/**
- * @brief Get the next line from a file descriptor.
- * @param fd File descriptor to read from.
- * @return char* Line read from the file descriptor.
- */
 char	*get_next_line(int fd)
 {
 	static char	buffer[BUFFER_SIZE + 1];

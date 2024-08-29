@@ -6,14 +6,17 @@
 #    By: fjalowie <fjalowie@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/29 10:36:34 by fjalowie          #+#    #+#              #
-#    Updated: 2024/07/30 12:19:42 by fjalowie         ###   ########.fr        #
+#    Updated: 2024/08/29 10:38:40 by fjalowie         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME	= pipex
 
 SRCS	= src/pipex.c src/utils.c
-SRCS_BONUS	= src_bonus/pipex_bonus.c \
+SRCS_BONUS	= 	src_bonus/main.c \
+				src_bonus/pb_validation.c \
+				src_bonus/pb_find_path.c \
+				src_bonus/pb_inout_functions.c \
 				src_bonus/pb_pipeline.c \
 				src_bonus/pb_utils.c \
 				src_bonus/get_next_line.c \

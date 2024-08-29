@@ -6,18 +6,12 @@
 /*   By: fjalowie <fjalowie@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/30 14:51:11 by fjalowie          #+#    #+#             */
-/*   Updated: 2024/08/28 19:59:54 by fjalowie         ###   ########.fr       */
+/*   Updated: 2024/08/29 11:02:22 by fjalowie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex_bonus.h"
 
-/**
- * @brief Duplicate file descriptors for input and output.
- * @param data Pointer to t_data structure.
- * @param input_fd File descriptor for input.
- * @param output_fd File descriptor for output.
- */
 static void	duplicate_fds(t_data *data, int input_fd, int output_fd)
 {
 	if (dup2(input_fd, STDIN_FILENO) < 0)
@@ -26,11 +20,6 @@ static void	duplicate_fds(t_data *data, int input_fd, int output_fd)
 		msg_error_and_exit(data, ERR_DUP2);
 }
 
-/**
- * @brief Get command from arguments and verify its path.
- * @param data Pointer to t_data structure.
- * @param argc_cnt Argument count.
- */
 static void	get_cmd(t_data *data, int argc_cnt)
 {
 	char	*origin_cmd;
@@ -44,11 +33,6 @@ static void	get_cmd(t_data *data, int argc_cnt)
 	}
 }
 
-/**
- * @brief Process the last command in the pipeline.
- * @param data Pointer to t_data structure.
- * @param input_fd File descriptor for input.
- */
 static void	process_last_cmd(t_data *data, int input_fd)
 {
 	if (data->no_output_file)
@@ -67,12 +51,6 @@ static void	process_last_cmd(t_data *data, int input_fd)
 	msg_error_and_exit(data, ERR_EXECVE);
 }
 
-/**
- * @brief Process a command in the pipeline.
- * @param data Pointer to t_data structure.
- * @param input_fd File descriptor for input.
- * @param fd_pipe Pipe file descriptors.
- */
 static void	process_cmd(t_data *data, int input_fd, int *fd_pipe)
 {
 	duplicate_fds(data, input_fd, fd_pipe[1]);
@@ -87,12 +65,6 @@ static void	process_cmd(t_data *data, int input_fd, int *fd_pipe)
 	msg_error_and_exit(data, ERR_EXECVE);
 }
 
-/**
- * @brief Create a recursive pipeline.
- * @param input_fd File descriptor for input.
- * @param data Pointer to t_data structure.
- * @param argc_cnt Argument count.
- */
 void	recursive_pipeline(int input_fd, t_data *data, int argc_cnt)
 {
 	int		fd_pipe[2];
